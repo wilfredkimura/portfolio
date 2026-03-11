@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wilfred Kimura | Software Developer</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1a1a1a;
+            --accent: #2563eb;
+            --secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header { margin-bottom: 60px; }
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .tagline { color: var(--secondary); font-size: 1.2rem; }
+
+        section { margin-bottom: 40px; }
+        h2 { font-size: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 20px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+        .card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+        .card:hover { border-color: var(--accent); }
+        .card h3 { margin-top: 0; font-size: 1.1rem; color: var(--accent); }
+        .card p { font-size: 0.95rem; color: var(--secondary); margin-bottom: 0; }
+
+        .skills-list { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; }
+        .skills-list li {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        footer { margin-top: 80px; font-size: 0.9rem; color: var(--secondary); border-top: 1px solid var(--border); padding-top: 20px; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Wilfred Kimura</h1>
+        <p class="tagline">Software Developer & Student at Technical University of Kenya</p>
+        <p>Building functional web applications with a focus on efficiency and user experience.</p>
+    </header>
+
+    <section id="skills">
+        <h2>Technical Stack</h2>
+        <ul class="skills-list">
+            <li>PHP (Laravel)</li>
+            <li>JavaScript (React, Node.js)</li>
+            <li>SQL</li>
+            <li>Docker</li>
+            <li>Nginx</li>
+            <li>Python (Pandas)</li>
+        </ul>
+    </section>
+
+    <section id="projects">
+        <h2>Selected Projects</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Njia Salama</h3>
+                <p>A hazard mapping application for cyclists in Kenya, focusing on route safety and real-time reporting.</p>
+            </div>
+            <div class="card">
+                <h3>YSC St. Dominic</h3>
+                <p>Web platform for Youth Serving Christ (YSC) at St. Theresa Kalimoni Parish, featuring membership management.</p>
+            </div>
+            <div class="card">
+                <h3>Books and Trunks Society</h3>
+                <p>Community-focused platform for a society dedicated to literature and shared growth.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>
+            Connect: 
+            <a href="https://github.com/wilfredkimura" target="_blank">GitHub</a> | 
+            <a href="mailto:wilfredmutahi9@gmail.com">Email</a>
+        </p>
+        <p>&copy; 2026 Wilfred Kimura</p>
+    </footer>
+
+</body>
+</html>
