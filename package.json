@@ -1,0 +1,29 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "server": "nodemon server/index.js",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilfredkimura/portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/wilfredkimura/portfolio/issues"
+  },
+  "homepage": "https://github.com/wilfredkimura/portfolio#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
