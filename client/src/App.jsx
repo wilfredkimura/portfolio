@@ -52,7 +52,7 @@ function App() {
       {/* Sidebar Navigation */}
       <aside className="sidebar">
         <div className="profile-section">
-          <h1 className="profile-name">Wilfred Kimura</h1>
+          <h1 className="profile-name">Kimura Mutahi</h1>
           <p className="profile-title">
             Software Developer & Student at Technical University of Kenya
           </p>
