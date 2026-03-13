@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # The Backend & Visitor Tracker
+  server:
+    build: 
+      context: .
+      dockerfile: ./server/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      # This ensures your visitor DB doesn't disappear on rebuild
+      - ./server/database.sqlite:/app/server/database.sqlite
+    environment:
+      - NODE_ENV=production
+    restart: always
+
+  # The Frontend
+  client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    ports:
+      - "3000:80" # Maps port 80 (Nginx) inside to 3000 outside
+    depends_on:
+      - server
+    restart: always

@@ -1,0 +1,25 @@
+name: Continuous Deployment
+on:
+  push:
+    branches: [ main ] # Runs every time you push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /path/to/your/project-folder
+            git pull origin main
+            # This triggers your Docker build automatically
+            docker-compose up -d --build
+            # Prune old images to save disk space on your VPS
+            docker image prune -f
