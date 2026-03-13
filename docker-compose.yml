@@ -1,19 +1,26 @@
+version: '3.8'
+
 services:
   portfolio-server:
-    build: ./server
+    build: 
+      context: .
+      dockerfile: server/Dockerfile
     restart: always
     ports:
-      - "5000:5000" # Crucial for NPM and curl to work
+      - "5000:5000"
     volumes:
-      - ./server/database.sqlite:/app/database.sqlite
+      # This MUST match where your server/index.js looks for the file
+      - ./server/database.sqlite:/app/server/database.sqlite
     environment:
       - NODE_ENV=production
       - PORT=5000
 
   portfolio-client:
-    build: ./client
+    build: 
+      context: .
+      dockerfile: client/Dockerfile
     restart: always
     ports:
-      - "8085:80"
+      - "8085:80" # Access your site at http://your-vps-ip:8085
     depends_on:
       - portfolio-server

@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
-const db = require('better-sqlite3')(path.join(__dirname, 'database.sqlite'));
+const dbPath = path.resolve(__dirname, 'database.sqlite');
+const db = require('better-sqlite3')(dbPath);
 const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();

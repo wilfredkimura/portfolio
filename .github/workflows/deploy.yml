@@ -1,7 +1,7 @@
 name: Continuous Deployment
 on:
   push:
-    branches: [ main ] # Runs every time you push to the main branch
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -17,9 +17,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /path/to/your/project-folder
-            git pull origin main
-            # This triggers your Docker build automatically
-            docker-compose up -d --build
-            # Prune old images to save disk space on your VPS
+            cd ~/kimurasite
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build
             docker image prune -f
