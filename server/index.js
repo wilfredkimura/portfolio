@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const dbPath = path.resolve(__dirname, 'database.sqlite');
 const db = require('better-sqlite3')(dbPath);
+const crypto = require('crypto');
 const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();
@@ -13,29 +14,54 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize DB
-db.prepare(`CREATE TABLE IF NOT EXISTS visitors (
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS visitors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ip TEXT UNIQUE, 
-    browser TEXT, 
+    fingerprint TEXT UNIQUE,   -- The unique ID for the device
+    ip TEXT,
+    browser TEXT,
+    device_type TEXT,          -- Mobile, Tablet, or Desktop
+    os TEXT,                   -- Windows, Linux, iOS, etc.
     last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-)`).run();
+  )
+`).run();
 
 // 1. The Visitor Tracker Middleware
 app.use((req, res, next) => {
-    // Ignore internal calls and common crawler-like requests if necessary
-    // For now, let's keep it simple as requested
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const browser = req.headers['user-agent'];
-    
+    const ua = req.headers['user-agent'] || '';
+
+    // 1. Simple Device & OS Detection
+    let deviceType = 'Desktop';
+    if (/Mobi|Android|iPhone/i.test(ua)) deviceType = 'Mobile';
+    if (/Tablet|iPad/i.test(ua)) deviceType = 'Tablet';
+
+    let os = 'Unknown OS';
+    if (ua.includes('Win')) os = 'Windows';
+    if (ua.includes('Mac')) os = 'MacOS';
+    if (ua.includes('X11') || ua.includes('Linux')) os = 'Linux';
+    if (ua.includes('Android')) os = 'Android';
+    if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
+    // 2. Create a Unique Fingerprint (ID)
+    // We hash the IP + UserAgent so the same device always gets the same ID
+    const fingerprint = crypto.createHash('md5').update(ip + ua).digest('hex');
+
+    // 3. Upsert into Database
+    const upsert = db.prepare(`
+        INSERT INTO visitors (fingerprint, ip, browser, device_type, os) 
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(fingerprint) DO UPDATE SET 
+            last_seen = CURRENT_TIMESTAMP,
+            ip = excluded.ip -- Update IP in case they moved from WiFi to Data
+    `);
+
     try {
-        const logVisitor = db.prepare(`
-            INSERT INTO visitors (ip, browser) VALUES (?, ?)
-            ON CONFLICT(ip) DO UPDATE SET last_seen = CURRENT_TIMESTAMP
-        `);
-        logVisitor.run(ip, browser);
+        upsert.run(fingerprint, ip, ua, deviceType, os);
     } catch (err) {
-        console.error('Database logging error:', err);
+        console.error("Tracking Error:", err);
     }
+
     next();
 });
 
