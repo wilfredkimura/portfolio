@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/index.js",
-    "server": "nodemon server/index.js",
+    "start": "node api/index.js",
+    "server": "nodemon api/index.js",
     "client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +23,12 @@
     "url": "https://github.com/wilfredkimura/portfolio/issues"
   },
   "homepage": "https://github.com/wilfredkimura/portfolio#readme",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1"
+  },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.14"
