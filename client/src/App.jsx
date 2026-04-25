@@ -9,7 +9,10 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
-  History
+  History,
+  Activity,
+  Search,
+  GitCommit
 } from 'lucide-react';
 import './index.css';
 
@@ -19,6 +22,14 @@ function App() {
   const [releases, setReleases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedRepos, setExpandedRepos] = useState(new Set());
+
+  // New States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('All');
+  const [activity, setActivity] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [stats, setStats] = useState({ day: 0, week: 0, month: 0, total: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -39,6 +50,45 @@ function App() {
         setLoading(false);
       });
   }, [activeTab]);
+
+  useEffect(() => {
+    setActivityLoading(true);
+    fetch('/api/activity')
+      .then(res => res.json())
+      .then(data => {
+        setActivity(Array.isArray(data) ? data : []);
+        setActivityLoading(false);
+      })
+      .catch(err => {
+        console.error('Fetch activity error:', err);
+        setActivityLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    setStatsLoading(true);
+    fetch('/api/stats')
+      .then(res => res.json())
+      .then(data => {
+        setStats(data);
+        setStatsLoading(false);
+      })
+      .catch(err => {
+        console.error('Fetch stats error:', err);
+        setStatsLoading(false);
+      });
+  }, []);
+
+  const languages = ['All', ...new Set(projects.map(p => p.language).filter(Boolean))];
+  
+  const filteredProjects = projects.filter(repo => {
+    const matchesSearch = repo.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (repo.description && repo.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesLanguage = selectedLanguage === 'All' || repo.language === selectedLanguage;
+    return matchesSearch && matchesLanguage;
+  });
+
+  const currentlyBuilding = projects.length > 0 ? [...projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0] : null;
 
   const toggleExpand = (repoId) => {
     const newExpanded = new Set(expandedRepos);
@@ -63,6 +113,12 @@ function App() {
       {/* Mobile Header */}
       <div className="mobile-header">
         <span className="mobile-brand">Kimura Mutahi</span>
+        {currentlyBuilding && (
+          <div className="mobile-currently-building">
+            <span className="building-label"><Activity size={12} className="pulse-icon" /> Building: </span>
+            <a href={currentlyBuilding.url} target="_blank" rel="noreferrer" className="building-project">{currentlyBuilding.name}</a>
+          </div>
+        )}
         <div className="mobile-nav">
           <button 
             onClick={() => setActiveTab('projects')} 
@@ -96,6 +152,12 @@ function App() {
           <p className="profile-title">
             Software Developer & Student at Technical University of Kenya
           </p>
+          {currentlyBuilding && (
+            <div className="currently-building">
+              <span className="building-label"><Activity size={14} className="pulse-icon" /> Currently Building</span>
+              <a href={currentlyBuilding.url} target="_blank" rel="noreferrer" className="building-project">{currentlyBuilding.name}</a>
+            </div>
+          )}
         </div>
 
         <nav>
@@ -134,6 +196,22 @@ function App() {
             </li>
           </ul>
         </nav>
+
+        <div className="activity-widget">
+          <h3 className="activity-title"><GitCommit size={16}/> Recent Activity</h3>
+          {activityLoading ? (
+            <p className="activity-text">Loading...</p>
+          ) : activity.slice(0, 4).map(event => (
+            <div key={event.id} className="activity-item">
+              <div className="activity-dot"></div>
+              <div className="activity-content">
+                <p className="activity-repo">{event.repo.split('/')[1]}</p>
+                <p className="activity-type">{event.type.replace('Event', '')}</p>
+                <span className="activity-time">{formatDate(event.createdAt)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -146,14 +224,62 @@ function App() {
                 A collection of my work, automatically synced from GitHub.
                 From safety-focused applications to community platforms.
               </p>
+
+              <div className="project-controls">
+                <div className="search-bar">
+                  <Search size={18} className="text-secondary" />
+                  <input 
+                    type="text" 
+                    placeholder="Search projects..." 
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="language-filters">
+                  {languages.map(lang => (
+                    <button 
+                      key={lang}
+                      onClick={() => setSelectedLanguage(lang)}
+                      className={`filter-btn ${selectedLanguage === lang ? 'active' : ''}`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </header>
+
+            <div className="heatmap-container">
+              <div className="heatmap-header">
+                <h3 className="heatmap-title">Contributions</h3>
+                <div className="stats-grid">
+                  <div className="stats-card">
+                    <span className="stats-value">{statsLoading ? '...' : stats.day}</span>
+                    <span className="stats-label">Day</span>
+                  </div>
+                  <div className="stats-card">
+                    <span className="stats-value">{statsLoading ? '...' : stats.week}</span>
+                    <span className="stats-label">Week</span>
+                  </div>
+                  <div className="stats-card">
+                    <span className="stats-value">{statsLoading ? '...' : stats.month}</span>
+                    <span className="stats-label">Month</span>
+                  </div>
+                  <div className="stats-card">
+                    <span className="stats-value">{statsLoading ? '...' : stats.total}</span>
+                    <span className="stats-label">Year</span>
+                  </div>
+                </div>
+              </div>
+              <img src="https://ghchart.rshah.org/14b8a6/wilfredkimura" alt="GitHub Contributions Heatmap" />
+            </div>
 
             <section id="projects">
               {loading ? (
                 <div className="loading">Fetching latest work...</div>
               ) : (
                 <div className="projects-grid">
-                  {projects.map((repo) => (
+                  {filteredProjects.map((repo) => (
                     <div key={repo.id} className="project-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <h3 className="project-title">{repo.name}</h3>
@@ -289,6 +415,22 @@ function App() {
             </section>
           </>
         )}
+
+        <div className="mobile-activity-widget">
+          <h3 className="activity-title"><GitCommit size={16}/> Recent Activity</h3>
+          {activityLoading ? (
+            <p className="activity-text">Loading...</p>
+          ) : activity.slice(0, 3).map(event => (
+            <div key={event.id} className="activity-item">
+              <div className="activity-dot"></div>
+              <div className="activity-content">
+                <p className="activity-repo">{event.repo.split('/')[1]}</p>
+                <p className="activity-type">{event.type.replace('Event', '')}</p>
+                <span className="activity-time">{formatDate(event.createdAt)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <footer className="footer">
           <p>&copy; {new Date().getFullYear()} Wilfred Kimura</p>

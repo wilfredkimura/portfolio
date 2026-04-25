@@ -90,6 +90,71 @@ app.get('/api/releases', async (req, res) => {
     }
 });
 
+// 3. Dynamic GitHub Activity Proxy
+app.get('/api/activity', async (req, res) => {
+    try {
+        const response = await axios.get('https://api.github.com/users/wilfredkimura/events/public', {
+            params: { per_page: 10 },
+            headers: githubHeaders
+        });
+        
+        const events = response.data.map(event => ({
+            id: event.id,
+            type: event.type,
+            repo: event.repo.name,
+            createdAt: event.created_at,
+            payload: event.payload
+        }));
+        
+        res.json(events);
+    } catch (err) {
+        console.error('GitHub API error (Activity):', err.message);
+        res.status(500).json({ error: "Failed to fetch GitHub activity" });
+    }
+});
+
+// 4. GitHub Stats (Day, Week, Month, Total)
+app.get('/api/stats', async (req, res) => {
+    try {
+        const response = await axios.get('https://api.github.com/users/wilfredkimura/events?per_page=100', {
+            headers: githubHeaders
+        });
+        const events = Array.isArray(response.data) ? response.data : [];
+        
+        const now = new Date();
+        const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+        const startOfWeek = new Date(new Date().setDate(now.getDate() - 7));
+        const startOfMonth = new Date(new Date().setDate(now.getDate() - 30));
+
+        let dayCount = 0;
+        let weekCount = 0;
+        let monthCount = 0;
+        let totalCount = 0;
+
+        events.forEach(event => {
+            if (event.type === 'PushEvent') {
+                const eventDate = new Date(event.created_at);
+                const commits = event.payload.size || 0;
+                
+                if (eventDate >= startOfDay) dayCount += commits;
+                if (eventDate >= startOfWeek) weekCount += commits;
+                if (eventDate >= startOfMonth) monthCount += commits;
+                totalCount += commits;
+            }
+        });
+
+        res.json({
+            day: dayCount,
+            week: weekCount,
+            month: monthCount,
+            total: totalCount
+        });
+    } catch (err) {
+        console.error('GitHub API error (Stats):', err.message);
+        res.status(500).json({ error: "Failed to fetch GitHub stats" });
+    }
+});
+
 // For local development
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, '0.0.0.0', () => {
